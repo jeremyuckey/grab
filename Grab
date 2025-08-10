@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fairness Flyer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #1a1a1a;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .game-container {
+            position: relative;
+            border: 4px solid #1a1a1a;
+            width: 360px;
+            height: 640px;
+            background: linear-gradient(180deg, #87ceeb 0%, #a2e0ff 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        canvas {
+            display: block;
+            background-color: transparent;
+            width: 100%;
+            height: 100%;
+        }
+
+        .game-ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.6);
+            transition: opacity 0.3s ease;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .game-ui.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #00c000;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px #000;
+        }
+        
+        /* Splash Screen specific styles */
+        #splashScreen {
+            background: url('https://i.imgur.com/radH1Y4.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            transition: opacity 0.5s ease;
+            z-index: 100;
+        }
+        
+        .splash-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #ffda00;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        .splash-loading {
+            font-size: 1.2rem;
+            color: #ddd;
+        }
+        
+        .powered-by {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            color: #bbb;
+        }
+
+        #startScreen {
+            background: url('https://i.imgur.com/radH1Y4.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: transparent;
+        }
+        
+        .score-display {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px #000;
+            font-family: 'Poppins', sans-serif;
+            z-index: 10;
+        }
+
+        .power-up-timer {
+            position: absolute;
+            top: 80px;
+            width: 100%;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffda00;
+            text-shadow: 1px 1px #000;
+            font-family: 'Poppins', sans-serif;
+            z-index: 10;
+        }
+        
+        .power-up-timer.hidden {
+            display: none;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #007bff;
+            text-shadow: 2px 2px #000;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .game-over-h1 {
+            font-size: 3rem;
+            margin-bottom: 5px;
+        }
+
+        .game-over-message {
+            color: #ffda00;
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px #000;
+        }
+        
+        p {
+            font-size: 1rem;
+            margin: 5px 0;
+            color: white;
+            text-shadow: 2px 2px #000;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .how-to-play-text {
+            font-size: 0.9rem;
+            margin-top: 15px;
+            color: #ccc;
+        }
+
+        .game-over-score {
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+        
+        #highScoreDisplay {
+            font-size: 1.2rem;
+            color: #ffda00;
+        }
+        
+        .user-id {
+            font-size: 0.8rem;
+            color: #bbb;
+            margin-top: 10px;
+            word-break: break-all;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1.1rem;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #d4af37;
+            transition: all 0.1s ease;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .main-button {
+            background: linear-gradient(180deg, #ffda00 0%, #e7b400 100%);
+            box-shadow: 0 6px 0 #d4af37;
+        }
+        
+        .secondary-button {
+            background: linear-gradient(180deg, #e7b400 0%, #d4af37 100%);
+            box-shadow: 0 6px 0 #c2a12d;
+        }
+        
+        .secondary-button:active {
+            box-shadow: 0 3px 0 #c2a12d;
+        }
+
+        button:active {
+            box-shadow: 0 3px 0 #d4af37;
+            transform: translateY(3px);
+        }
+        
+        input[type="text"] {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 80%;
+            max-width: 200px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        /* New styling for the placeholder text */
+        input[type="text"]::placeholder {
+            color: #aaaaaa;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 20;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #34495e;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            width: 80%;
+            max-width: 300px;
+            position: relative;
+            text-align: center;
+            color: #fff;
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close-button:hover,
+        .close-button:focus {
+            color: #fff;
+            text-decoration: none;
+        }
+        
+        .leaderboard-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .leaderboard-list li {
+            padding: 10px;
+            border-bottom: 1px solid #4a657c;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .leaderboard-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .leaderboard-list li .rank {
+            font-weight: bold;
+            color: #ffda00;
+            margin-right: 10px;
+        }
+        
+        .leaderboard-list li .player {
+            flex-grow: 1;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+        
+        .leaderboard-list li .score {
+            font-weight: bold;
+            color: #00c000;
+        }
+
+        .yellow-text {
+            color: yellow;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        /* New CSS for the side-by-side buttons */
+        .modal-button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <!-- Splash Screen -->
+        <div id="splashScreen" class="game-ui">
+            <p class="splash-loading">Loading...</p>
+            <p class="powered-by">Powered by Gemini</p>
+        </div>
+        
+        <!-- Start Screen (now visible after splash) -->
+        <div id="startScreen" class="game-ui hidden">
+            <div class="button-group">
+                <button id="startButton" class="main-button">Play</button>
+                <button id="howToPlayButton" class="secondary-button">How to Play</button>
+                <button id="leaderboardButtonStart" class="secondary-button">Leaderboard</button>
+            </div>
+        </div>
+        <div id="gameOverScreen" class="game-ui hidden">
+            <h1 class="game-over-h1">Game Over</h1>
+            <p class="game-over-message">Thanks for Fighting for Fair!</p>
+            <p id="finalScore" class="game-over-score"></p>
+            <p id="highScoreDisplay">High Score: 0</p>
+            <button id="continueButton" class="main-button">Continue</button>
+        </div>
+        
+        <!-- Name Input Modal -->
+        <div id="nameInputModal" class="modal">
+            <div class="modal-content">
+                <h2>Save Your Score</h2>
+                <p>Enter your AWA Username</p>
+                <input type="text" id="playerNameInput" placeholder="Example: 202JEREMY" maxlength="15">
+                <!-- New container for side-by-side buttons -->
+                <div class="modal-button-group">
+                    <button id="saveScoreButton" class="main-button" disabled>Save Score</button>
+                    <button id="playAgainButton" class="secondary-button">Play Again</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- How to Play Modal -->
+        <div id="howToPlayModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" id="closeHowToPlayButton">&times;</span>
+                <h2>How to Play</h2>
+                <p>Tap or press the space bar to fly.</p>
+                <p>Avoid the gas pipes!</p>
+                <p>Collect yellow stars to become untouchable temporarily 💪</p>
+                <p>Watch out for the "Free TV" deals with hidden T&C's 📺</p>
+                <p>Avoid the 🟢 and 🟣 circles, they will cost you points!</p>
+                <p class="yellow-text">To win! You need one BB+PWR sale. Plus, have a highscore in the Top15! Happy Selling 🎯</p>
+            </div>
+        </div>
+
+        <div id="scoreDisplay" class="score-display hidden">0</div>
+        <div id="powerUpTimer" class="power-up-timer hidden"></div>
+    </div>
+    
+    <!-- Leaderboard Modal -->
+    <div id="leaderboardModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeLeaderboardButton">&times;</span>
+            <h2>Top 15 Scores</h2>
+            <ul id="leaderboardList" class="leaderboard-list">
+                <!-- Leaderboard items will be inserted here -->
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase configuration and initialization
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        let userId = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const leaderboardCollectionPath = `artifacts/${appId}/public/data/leaderboard`;
+
+        // UI elements
+        const splashScreen = document.getElementById('splashScreen');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const nameInputModal = document.getElementById('nameInputModal');
+        const howToPlayModal = document.getElementById('howToPlayModal');
+        const leaderboardModal = document.getElementById('leaderboardModal');
+        const startButton = document.getElementById('startButton');
+        const howToPlayButton = document.getElementById('howToPlayButton');
+        const leaderboardButtonStart = document.getElementById('leaderboardButtonStart');
+        const closeHowToPlayButton = document.getElementById('closeHowToPlayButton');
+        const closeLeaderboardButton = document.getElementById('closeLeaderboardButton');
+        const continueButton = document.getElementById('continueButton');
+        const playerNameInput = document.getElementById('playerNameInput');
+        const saveScoreButton = document.getElementById('saveScoreButton');
+        const playAgainButton = document.getElementById('playAgainButton');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const finalScore = document.getElementById('finalScore');
+        const highScoreDisplay = document.getElementById('highScoreDisplay');
+        const powerUpTimerDisplay = document.getElementById('powerUpTimer');
+        const leaderboardList = document.getElementById('leaderboardList');
+        
+        // Canvas and game variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const PLAYER_WIDTH = 34;
+        const PLAYER_HEIGHT = 24;
+        const PIPE_WIDTH = 52;
+        const PIPE_GAP = 150;
+        const GRAVITY = 0.5;
+        const JUMP_VELOCITY = -8;
+        const BASE_PIPE_SPEED = 2;
+        const BASE_PIPE_INTERVAL = 2000;
+        const CLOUD_SPEED = 0.5;
+        const GROUND_HEIGHT = 100;
+        const PIPE_LIP_HEIGHT = 30;
+        const POWER_UP_CHANCE = 0.3;
+        const ENEMY_CHANCE = 0.15;
+        const EXTRA_POINTS = 10;
+        const CORNER_RADIUS = 8;
+
+        let score = 0;
+        let highScore = localStorage.getItem('highScore') || 0;
+        let player = {};
+        let pipes = [];
+        let powerUps = [];
+        let enemies = [];
+        let clouds = [];
+        let isGameOver = true;
+        let isGameStarted = false;
+        let lastPipeTime = 0;
+        let animationFrameId;
+        let isInvincible = false;
+        let invincibleTimer = 0;
+        let flashIntervalId;
+        let difficultyLevel = 1;
+        let pulseScale = 1.0;
+        let pulseDirection = 0.01;
+        let capeOffset = 0;
+        const POWER_UP_TYPES = {
+            'star': { emoji: '⭐', color: '#ffd700', effect: 'invincible' },
+            'lightning': { emoji: '⚡', color: '#ffea00', effect: 'score' }
+        };
+        const ENEMY_TYPES = {
+            'tv': { emoji: '📺', size: 36, damage: 'game_over' },
+            'greenCircle': { emoji: '🟢', size: 36, damage: 1 },
+            'purpleCircle': { emoji: '🟣', size: 36, damage: 1 }
+        };
+        const ENEMY_COOLDOWN = 1000;
+        let lastEnemyHitTime = 0;
+
+        // --- Firebase Authentication ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                console.log("Firebase authenticated. User ID:", userId);
+                splashScreen.classList.add('hidden');
+                startScreen.classList.remove('hidden');
+            } else {
+                console.log("No user signed in. Signing in anonymously...");
+                try {
+                    if (typeof __initial_auth_token !== 'undefined') {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Firebase auth error:", error);
+                }
+            }
+        });
+
+        // --- Audio Functions ---
+        function playSound(frequency, type, duration, volume) {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.type = type;
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.start();
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + duration);
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (e) {
+                console.error("Web Audio API not supported", e);
+            }
+        }
+
+        function playJumpSound() {
+            playSound(600, 'triangle', 0.1, 0.4);
+        }
+
+        function playScoreSound() {
+            playSound(880, 'sine', 0.05, 0.2);
+        }
+
+        function playGameOverSound() {
+            playSound(150, 'sawtooth', 0.5, 0.5);
+        }
+        
+        function playStarSound() {
+            playSound(1200, 'sine', 0.1, 0.5);
+        }
+
+        function playLightningSound() {
+            playSound(1500, 'sawtooth', 0.1, 0.6);
+        }
+        
+        function playEnemyHitSound() {
+            playSound(400, 'square', 0.1, 0.3);
+        }
+
+        function playNegativeSound() {
+            playSound(200, 'square', 0.1, 0.3);
+        }
+
+        // --- Drawing Functions ---
+        function roundRect(x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        function drawClouds() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            clouds.forEach(cloud => {
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, cloud.radius1, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.radius1, cloud.y, cloud.radius2, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.radius1 * 1.5, cloud.y + cloud.radius2 / 2, cloud.radius3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawPlayer() {
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.angle);
+
+            const bodyColor = (isInvincible && player.isFlashing) ? '#ffffff' : '#3498db';
+            const capeColor = (isInvincible && player.isFlashing) ? '#ffffff' : '#e74c3c';
+            const skinColor = '#ffdbac';
+
+            capeOffset = Math.max(-10, Math.min(10, player.velocity * 0.5));
+
+            // Draw cape
+            ctx.fillStyle = capeColor;
+            ctx.beginPath();
+            ctx.moveTo(-PLAYER_WIDTH * 0.7, -PLAYER_HEIGHT * 0.5 + capeOffset);
+            ctx.quadraticCurveTo(-PLAYER_WIDTH * 1.2, 0, -PLAYER_WIDTH * 0.7, PLAYER_HEIGHT * 0.5 - capeOffset);
+            ctx.lineTo(-PLAYER_WIDTH * 0.3, PLAYER_HEIGHT * 0.5);
+            ctx.quadraticCurveTo(-PLAYER_WIDTH * 0.5, 0, -PLAYER_WIDTH * 0.3, -PLAYER_HEIGHT * 0.5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Draw body
+            ctx.fillStyle = bodyColor;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, PLAYER_WIDTH * 0.5, PLAYER_HEIGHT * 0.6, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw head
+            ctx.fillStyle = skinColor;
+            ctx.beginPath();
+            ctx.arc(PLAYER_WIDTH * 0.5, -PLAYER_HEIGHT * 0.3, PLAYER_HEIGHT * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw emblem ('2' with pulsing effect)
+            ctx.fillStyle = '#f1c40f';
+            ctx.font = `${12 * pulseScale}px "Poppins", sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('2', 0, 0);
+
+            ctx.restore();
+        }
+
+        function drawPipes() {
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 4;
+            ctx.shadowOffsetY = 4;
+            pipes.forEach(pipe => {
+                ctx.fillStyle = '#008a00';
+                ctx.strokeStyle = '#006000';
+                ctx.lineWidth = 3;
+
+                // Top pipe
+                roundRect(pipe.x, 0, pipe.width, pipe.y - PIPE_LIP_HEIGHT, CORNER_RADIUS);
+                ctx.fill();
+                ctx.stroke();
+                // Top pipe lip
+                ctx.fillStyle = '#00c000';
+                roundRect(pipe.x - 5, pipe.y - PIPE_LIP_HEIGHT, pipe.width + 10, PIPE_LIP_HEIGHT, CORNER_RADIUS);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Bottom pipe
+                ctx.fillStyle = '#008a00';
+                roundRect(pipe.x, pipe.y + PIPE_GAP + PIPE_LIP_HEIGHT, pipe.width, canvas.height - (pipe.y + PIPE_GAP + PIPE_LIP_HEIGHT) - GROUND_HEIGHT, CORNER_RADIUS);
+                ctx.fill();
+                ctx.stroke();
+                // Bottom pipe lip
+                ctx.fillStyle = '#00c000';
+                roundRect(pipe.x - 5, pipe.y + PIPE_GAP, pipe.width + 10, PIPE_LIP_HEIGHT, CORNER_RADIUS);
+                ctx.fill();
+                ctx.stroke();
+            });
+            ctx.shadowColor = 'rgba(0,0,0,0)';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+        }
+        
+        function drawPowerUps() {
+            powerUps.forEach(powerUp => {
+                ctx.font = '24px "Poppins", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.beginPath();
+                ctx.arc(powerUp.x, powerUp.y, 15, 0, Math.PI * 2);
+                ctx.fillStyle = POWER_UP_TYPES[powerUp.type].color;
+                ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillText(POWER_UP_TYPES[powerUp.type].emoji, powerUp.x, powerUp.y + 8);
+            });
+        }
+
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                ctx.font = `${enemy.size}px "Poppins", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText(ENEMY_TYPES[enemy.type].emoji, enemy.x, enemy.y + enemy.size / 2);
+            });
+        }
+
+        function drawGround() {
+            ctx.fillStyle = '#34495e';
+            ctx.fillRect(0, canvas.height - GROUND_HEIGHT, canvas.width, GROUND_HEIGHT);
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(0, canvas.height - GROUND_HEIGHT, canvas.width, GROUND_HEIGHT);
+        }
+
+        // --- Game Logic ---
+        function init() {
+            player = {
+                x: canvas.width / 4,
+                y: (canvas.height - GROUND_HEIGHT) / 2,
+                velocity: 0,
+                angle: 0,
+                isFlashing: false
+            };
+            pipes = [];
+            powerUps = [];
+            enemies = [];
+            clouds = [];
+            score = 0;
+            difficultyLevel = 1;
+            isInvincible = false;
+            invincibleTimer = 0;
+            clearInterval(flashIntervalId);
+            powerUpTimerDisplay.classList.add('hidden');
+            scoreDisplay.textContent = score;
+            isGameOver = false;
+            isGameStarted = true;
+            lastPipeTime = performance.now();
+            highScoreDisplay.textContent = `High Score: ${highScore}`;
+            lastEnemyHitTime = 0;
+            pulseScale = 1.0;
+            pulseDirection = 0.01;
+            capeOffset = 0;
+            for (let i = 0; i < 3; i++) {
+                clouds.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * (canvas.height - 200),
+                    radius1: Math.random() * 20 + 20,
+                    radius2: Math.random() * 15 + 15,
+                    radius3: Math.random() * 25 + 25
+                });
+            }
+        }
+        
+        function activateInvincibility() {
+            isInvincible = true;
+            invincibleTimer = 5;
+            powerUpTimerDisplay.textContent = `Invincible: ${invincibleTimer}s`;
+            powerUpTimerDisplay.classList.remove('hidden');
+            player.isFlashing = true;
+            flashIntervalId = setInterval(() => {
+                player.isFlashing = !player.isFlashing;
+            }, 100);
+            const countdownInterval = setInterval(() => {
+                invincibleTimer--;
+                powerUpTimerDisplay.textContent = `Invincible: ${invincibleTimer}s`;
+                if (invincibleTimer <= 0) {
+                    isInvincible = false;
+                    powerUpTimerDisplay.classList.add('hidden');
+                    clearInterval(countdownInterval);
+                    clearInterval(flashIntervalId);
+                    player.isFlashing = false;
+                }
+            }, 1000);
+        }
+
+        function update() {
+            if (score > difficultyLevel * 10) {
+                difficultyLevel++;
+            }
+            const speedMultiplier = 1 + (difficultyLevel - 1) * 0.2;
+            const currentPipeSpeed = BASE_PIPE_SPEED * speedMultiplier;
+            const currentPipeInterval = BASE_PIPE_INTERVAL / speedMultiplier;
+            player.velocity += GRAVITY;
+            player.y += player.velocity;
+            player.angle = Math.min(Math.PI / 4, (player.velocity / 15) * Math.PI / 4);
+            pulseScale += pulseDirection;
+            if (pulseScale > 1.2 || pulseScale < 1.0) {
+                pulseDirection *= -1;
+            }
+
+            const currentTime = performance.now();
+            if (currentTime - lastPipeTime > currentPipeInterval) {
+                const pipeY = Math.random() * (canvas.height - PIPE_GAP - 200 - GROUND_HEIGHT) + 100;
+                pipes.push({
+                    x: canvas.width,
+                    y: pipeY,
+                    width: PIPE_WIDTH,
+                    passed: false
+                });
+
+                const randomChance = Math.random();
+                if (randomChance < POWER_UP_CHANCE) {
+                    const weightedTypes = ['star', 'lightning', 'lightning', 'lightning', 'lightning', 'lightning'];
+                    const randomPowerUpType = weightedTypes[Math.floor(Math.random() * weightedTypes.length)];
+                    powerUps.push({
+                        x: canvas.width + PIPE_WIDTH / 2,
+                        y: pipeY + PIPE_GAP / 2,
+                        type: randomPowerUpType,
+                        isCollected: false
+                    });
+                } else if (randomChance > 1 - ENEMY_CHANCE) {
+                    const enemyKeys = Object.keys(ENEMY_TYPES);
+                    const randomEnemyKey = enemyKeys[Math.floor(Math.random() * enemyKeys.length)];
+                    const enemyData = ENEMY_TYPES[randomEnemyKey];
+                    enemies.push({
+                        x: canvas.width + PIPE_WIDTH / 2,
+                        y: pipeY + PIPE_GAP / 2,
+                        type: randomEnemyKey,
+                        size: enemyData.size,
+                        isHit: false
+                    });
+                }
+                lastPipeTime = currentTime;
+            }
+            
+            clouds.forEach(cloud => {
+                cloud.x -= currentPipeSpeed * 0.2;
+            });
+            clouds = clouds.filter(cloud => cloud.x + cloud.radius3 * 1.5 > -50);
+            while (clouds.length < 3) {
+                clouds.push({
+                    x: canvas.width,
+                    y: Math.random() * (canvas.height - 200),
+                    radius1: Math.random() * 20 + 20,
+                    radius2: Math.random() * 15 + 15,
+                    radius3: Math.random() * 25 + 25
+                });
+            }
+
+            pipes.forEach(pipe => {
+                pipe.x -= currentPipeSpeed;
+                if (!isInvincible) {
+                    if (
+                        player.x + PLAYER_WIDTH / 2 > pipe.x &&
+                        player.x - PLAYER_WIDTH / 2 < pipe.x + pipe.width &&
+                        (player.y - PLAYER_HEIGHT / 2 < pipe.y - PIPE_LIP_HEIGHT || player.y + PLAYER_HEIGHT / 2 > pipe.y + PIPE_GAP + PIPE_LIP_HEIGHT)
+                    ) {
+                        isGameOver = true;
+                        playGameOverSound();
+                    }
+                }
+                if (pipe.x + pipe.width < player.x - PLAYER_WIDTH / 2 && !pipe.passed) {
+                    score++;
+                    scoreDisplay.textContent = score;
+                    pipe.passed = true;
+                    playScoreSound();
+                }
+            });
+
+            powerUps.forEach(powerUp => {
+                powerUp.x -= currentPipeSpeed;
+                if (
+                    player.x + PLAYER_WIDTH / 2 > powerUp.x - 15 &&
+                    player.x - PLAYER_WIDTH / 2 < powerUp.x + 15 &&
+                    player.y + PLAYER_HEIGHT / 2 > powerUp.y - 15 &&
+                    player.y - PLAYER_HEIGHT / 2 < powerUp.y + 15 &&
+                    !powerUp.isCollected
+                ) {
+                    powerUp.isCollected = true;
+                    if (powerUp.type === 'star') {
+                        activateInvincibility();
+                        playStarSound();
+                    } else if (powerUp.type === 'lightning') {
+                        score += EXTRA_POINTS;
+                        scoreDisplay.textContent = score;
+                        playLightningSound();
+                    }
+                }
+            });
+            powerUps = powerUps.filter(p => !p.isCollected && p.x > -50);
+            pipes = pipes.filter(pipe => pipe.x > -pipe.width);
+
+            enemies.forEach(enemy => {
+                enemy.x -= currentPipeSpeed;
+                if (
+                    player.x + PLAYER_WIDTH / 2 > enemy.x - enemy.size / 2 &&
+                    player.x - PLAYER_WIDTH / 2 < enemy.x + enemy.size / 2 &&
+                    player.y + PLAYER_HEIGHT / 2 > enemy.y - enemy.size / 2 &&
+                    player.y - PLAYER_HEIGHT / 2 < enemy.y + enemy.size / 2 &&
+                    !enemy.isHit
+                ) {
+                    if (isInvincible) {
+                        enemy.isHit = true;
+                        playEnemyHitSound();
+                    } else {
+                        const enemyData = ENEMY_TYPES[enemy.type];
+                        if (enemyData.damage === 'game_over') {
+                            isGameOver = true;
+                            playGameOverSound();
+                        } else if (enemyData.damage === 1) {
+                            if (currentTime - lastEnemyHitTime > ENEMY_COOLDOWN) {
+                                score = Math.max(0, score - 1);
+                                scoreDisplay.textContent = score;
+                                lastEnemyHitTime = currentTime;
+                                enemy.isHit = true;
+                                playNegativeSound();
+                            }
+                        }
+                    }
+                }
+            });
+            enemies = enemies.filter(enemy => !enemy.isHit && enemy.x > -enemy.size);
+
+            if (player.y + PLAYER_HEIGHT / 2 > canvas.height - GROUND_HEIGHT || player.y - PLAYER_HEIGHT / 2 < 0) {
+                isGameOver = true;
+                playGameOverSound();
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawClouds();
+            drawPipes();
+            drawPowerUps();
+            drawEnemies();
+            drawPlayer();
+            drawGround();
+        }
+
+        function animate() {
+            if (isGameStarted && !isGameOver) {
+                update();
+                draw();
+                animationFrameId = requestAnimationFrame(animate);
+            } else if (isGameOver) {
+                endGame();
+            }
+        }
+
+        function jump() {
+            if (isGameStarted && !isGameOver) {
+                player.velocity = JUMP_VELOCITY;
+                playJumpSound();
+            }
+        }
+
+        function endGame() {
+            isGameStarted = false;
+            cancelAnimationFrame(animationFrameId);
+            finalScore.textContent = `Final Score: ${score}`;
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('highScore', highScore);
+            }
+            highScoreDisplay.textContent = `High Score: ${highScore}`;
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        // --- Firebase Leaderboard Functions ---
+        async function saveScoreToLeaderboard(playerName, score) {
+            if (!auth.currentUser) {
+                console.error("User not authenticated.");
+                return;
+            }
+            try {
+                const leaderboardRef = collection(db, leaderboardCollectionPath);
+                await addDoc(leaderboardRef, {
+                    playerName: playerName,
+                    score: score,
+                    timestamp: Timestamp.now()
+                });
+                console.log("Score saved successfully!");
+                hideModal(nameInputModal);
+                showStartScreen();
+            } catch (e) {
+                console.error("Error adding document: ", e);
+            }
+        }
+
+        async function fetchLeaderboard() {
+            if (!auth.currentUser) {
+                console.error("User not authenticated.");
+                return;
+            }
+            try {
+                const leaderboardRef = collection(db, leaderboardCollectionPath);
+                const querySnapshot = await getDocs(leaderboardRef);
+                const scores = [];
+                querySnapshot.forEach((doc) => {
+                    scores.push(doc.data());
+                });
+
+                // Sort scores by score descending, then by timestamp ascending
+                scores.sort((a, b) => {
+                    if (a.score === b.score) {
+                        return a.timestamp.toMillis() - b.timestamp.toMillis();
+                    }
+                    return b.score - a.score;
+                });
+
+                leaderboardList.innerHTML = '';
+                scores.slice(0, 15).forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="rank">${index + 1}.</span><span class="player">${item.playerName}</span><span class="score">${item.score}</span>`;
+                    leaderboardList.appendChild(li);
+                });
+            } catch (e) {
+                console.error("Error fetching leaderboard: ", e);
+            }
+        }
+        
+        // --- UI Control Functions ---
+        function showStartScreen() {
+            gameOverScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            scoreDisplay.classList.add('hidden');
+            draw();
+        }
+
+        function hideModal(modal) {
+            modal.style.display = 'none';
+        }
+
+        // --- Event Listeners ---
+        startButton.addEventListener('click', () => {
+            startScreen.classList.add('hidden');
+            scoreDisplay.classList.remove('hidden');
+            init();
+            animate();
+        });
+
+        howToPlayButton.addEventListener('click', () => {
+            howToPlayModal.style.display = 'flex';
+        });
+
+        closeHowToPlayButton.addEventListener('click', () => {
+            hideModal(howToPlayModal);
+        });
+
+        leaderboardButtonStart.addEventListener('click', async () => {
+            await fetchLeaderboard();
+            leaderboardModal.style.display = 'flex';
+        });
+
+        closeLeaderboardButton.addEventListener('click', () => {
+            hideModal(leaderboardModal);
+        });
+
+        continueButton.addEventListener('click', () => {
+            gameOverScreen.classList.add('hidden');
+            nameInputModal.style.display = 'flex';
+        });
+
+        saveScoreButton.addEventListener('click', async () => {
+            const playerName = playerNameInput.value.trim();
+            if (playerName) {
+                saveScoreButton.disabled = true;
+                await saveScoreToLeaderboard(playerName, score);
+                saveScoreButton.disabled = false;
+            }
+        });
+
+        playAgainButton.addEventListener('click', () => {
+            hideModal(nameInputModal);
+            showStartScreen();
+        });
+        
+        playerNameInput.addEventListener('input', (e) => {
+            saveScoreButton.disabled = e.target.value.trim() === '';
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
+                jump();
+            }
+        });
+        
+        canvas.addEventListener('mousedown', () => {
+            jump();
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            jump();
+        });
+
+        // --- Game Initialization on Window Load ---
+        window.onload = function() {
+            // Set initial canvas size
+            function resizeCanvas() {
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+                if (!isGameStarted) {
+                    draw();
+                }
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            draw(); // Draw the initial screen
+        };
+    </script>
+</body>
+</html>
